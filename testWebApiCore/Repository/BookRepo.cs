@@ -163,7 +163,23 @@ namespace testWebApiCore.Repository
 
 
         }
+        public List<Country> getCountries()
+        {
+            try
+            {
+                var cou = _db.Countries.ToList();
+                return cou;
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
 
 
     }
+
+
 }
+

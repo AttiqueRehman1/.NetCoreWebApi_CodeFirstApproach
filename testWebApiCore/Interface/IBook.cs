@@ -1,4 +1,5 @@
 ﻿using testWebApiCore.Models;
+using testWebApiCore.Repository;
 
 namespace testWebApiCore.Interface
 {
@@ -10,6 +11,7 @@ namespace testWebApiCore.Interface
         void AddBook(Book book);
         public void AddAuthor(string authorname);
         Book GetBookAuthorName(int bookid);
+        public List<Country> getCountries();
         //Task<List<Author>> getAuthorBookListById(int authorid);
         //Task<List<Author>> getAuthorBookListByName(string authorname);
         //Task<List<Book>> getBookName(string bkName);
