@@ -1,13 +1,11 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+
 using testWebApiCore.DBContext;
 using testWebApiCore.DTO_Models;
 using testWebApiCore.Interface;
 using testWebApiCore.Models;
-using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
-using static System.Reflection.Metadata.BlobBuilder;
+
 
 namespace testWebApiCore.Controllers
 {
@@ -15,14 +13,9 @@ namespace testWebApiCore.Controllers
     [ApiController]
     public class BookController : ControllerBase
     {
-
-        private readonly MyDbContext _db;
-        private IMapper _mapper;
-        IBook _bookrepo;
-        public BookController(MyDbContext db, IMapper mapper, IBook bookrepo)
+        private IBook _bookrepo;
+        public BookController(IBook bookrepo)
         {
-            _db = db;
-            _mapper = mapper;
             _bookrepo = bookrepo;
         }
 
@@ -43,12 +36,11 @@ namespace testWebApiCore.Controllers
 
         [HttpPost]
         [Route("AddAuthor")]
-        public ActionResult AddAuthor(Author author)
+        public ActionResult AddAuthor(string name)
         {
             try
             {
-                _db.Authors.Add(author);
-                _db.SaveChanges();
+                _bookrepo.AddAuthor(name);
                 return Ok("Author Add sucessfully");
             }
             catch (Exception ex)
@@ -64,7 +56,11 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-                return Ok(_bookrepo.GetBook());
+                var getbooklsit = _bookrepo.GetBook();
+                if (getbooklsit != null)
+                    return Ok(getbooklsit);
+                else
+                    return NotFound("Not Found any list...");
             }
             catch (Exception ex)
             {
@@ -79,9 +75,11 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-                var authorList = _db.Authors.ToList();
-                var MapperList = _mapper.Map<List<AuthorDTO>>(authorList);
-                return Ok(MapperList);
+                var a = _bookrepo.GetAllAuthor();
+                if (a != null)
+                    return Ok(a);
+                else
+                    return NotFound("No Author Found...");
             }
             catch (Exception ex)
             {
@@ -96,36 +94,32 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-                var book = _db.Books
-                    .Include(x => x.Author)
-                    .Where(b => b.bookId == bookid).FirstOrDefault();
+                var a = _bookrepo.GetBookAuthorName(bookid);
                 // var author = _db.Authors.Where(a => a.AuthorId == book.AuthorId).FirstOrDefault();
-                if (book == null)
+                if (a == null)
                 {
                     return NotFound("Book not found");
                 }
-
-                return Ok(book);
+                return Ok(a);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
-
+        /*
         [HttpGet]
         [Route("api/bookListbyId/{authorid}")]
         public ActionResult getAuthorBookListById(int authorid)
         {
             try
             {
-                var authorBookList = _db.Authors
-                    .Include(x => x.Books).Where(c => c.AuthorId == authorid).ToList();
-                if (authorBookList == null)
+                var a = _bookrepo.getAuthorBookListById(authorid);
+                if (a == null)
                 {
                     return NotFound("Book not found");
                 }
-                return Ok(authorBookList);
+                return Ok(a);
             }
             catch (Exception ex)
             {
@@ -139,35 +133,33 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-                var authorBookList = _db.Authors
-                    .Include(x => x.Books)
-                    .Where(c => c.AuthorName == authorname).FirstOrDefault();
-                if (authorBookList == null)
+                var a = _bookrepo.getAuthorBookListByName(authorname);
+                if (a == null)
                 {
                     return NotFound("Book not found");
                 }
-                return Ok(authorBookList);
+                return Ok(a);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
+
         [HttpGet]
         [Route("api/getBookName")]
         public ActionResult getBookName(string bkName)
         {
             try
             {
-                var bookName = _db.Books
-                .Where(b => b.bookTitle.Contains(bkName)).ToList();
 
+                var a = _bookrepo.getBookName(bkName);
 
-                if (bookName == null)
+                if (a == null)
                 {
                     return NotFound("Book not found");
                 }
-                return Ok(bookName);
+                return Ok(a);
             }
             catch (Exception ex)
             {
@@ -181,8 +173,7 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-                _db.authorInfos.Add(authorInfo);
-                _db.SaveChanges();
+                _bookrepo.AddAuthorInfo(authorInfo);
                 return Ok("AuthorInfo Add successfully");
             }
             catch (Exception ex)
@@ -197,18 +188,12 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-                var authorInfo = _db.Books
-                    .Include(x => x.Author)
-                    .ThenInclude(b => b.AuthorInfo)
-                    .Where(b => b.Author.AuthorName == authorName)
-                    .ToList();
-
-
-                if (authorInfo == null)
+                var a = _bookrepo.getAuthoInfoAndBooks(authorName);
+                if (a == null)
                 {
                     return NotFound("Book not found");
                 }
-                return Ok(authorInfo);
+                return Ok(a);
             }
             catch (Exception ex)
             {
@@ -222,10 +207,7 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-                var bk = _mapper.Map<Book>(book);
-                _db.Books.Add(bk);
-                _db.SaveChanges();
-
+                _bookrepo.AddBookDTO(book);
                 return Ok("Book Added Successfully");
             }
             catch (Exception ex)
@@ -241,9 +223,7 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-                var a = _mapper.Map<Author>(author);
-                _db.Authors.Add(a);
-                _db.SaveChanges();
+                _bookrepo.AddAuthorDTO(author);
                 return Ok("Author Add sucessfully");
             }
             catch (Exception ex)
@@ -260,19 +240,12 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-                var book = _db.Books
-                    .Include(x => x.Author)
-                    .Where(b => b.bookId == bookid).FirstOrDefault();
-
-                var asd = _mapper.Map<BookDTO>(book);
-                asd.AuthorName = book.Author.AuthorName;
-
-                if (book == null)
+                var a = _bookrepo.DTOGetBookAuthorName(bookid);
+                if (a == null)
                 {
                     return NotFound("Book not found");
                 }
-
-                return Ok(asd);
+                return Ok(a);
             }
             catch (Exception ex)
             {
@@ -287,9 +260,7 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-                var infoDTO = _mapper.Map<AuthorInfo>(authorInfo);
-                _db.authorInfos.Add(infoDTO);
-                _db.SaveChanges();
+                _bookrepo.DTOAddAuthorInfo(authorInfo);
                 return Ok("AuthorInfo Add successfully");
             }
             catch (Exception ex)
@@ -304,28 +275,21 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-                var authorInfo = _db.Authors
-                    .Include(a => a.AuthorInfo)
-                    .Include(a => a.Books)
-                    .Where(a => a.AuthorName == authorName)
-                    .FirstOrDefault();
-
-
-                var dto = _mapper.Map<AuhhorInfo_BookInfo>(authorInfo);
+                var a = _bookrepo.DTOgetAuthoInfoAndBooks(authorName);
                 //dto.Books = authorInfo.Books.Select(b => b.bookTitle).ToList();
 
-                if (authorInfo == null)
+                if (a == null)
                 {
                     return NotFound("Book not found");
                 }
-                return Ok(dto);
+                return Ok(a);
             }
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
             }
         }
-
+        */
 
     }
 }
