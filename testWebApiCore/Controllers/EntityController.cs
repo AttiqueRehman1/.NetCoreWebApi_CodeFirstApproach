@@ -27,6 +27,10 @@ namespace testWebApiCore.Controllers
             Employee emp2 = new Employee("sajadRehman", "sajad@gmail", "54341234", "7th Road");
             Employee emp3 = new Employee("BongBong", "Bong@gmail", "3452341234", "8th Road");
             Employee emp4 = new Employee("UmarRehman", "Umar@gmail", "652341234", "9th Road");
+            Employee emp5 = new Employee("sajadRehman", "sajad@gmail", "54341234", "7th Road");
+            Employee emp = new Employee("BongBong", "Bong@gmail", "3452341234", "8th Road");
+            Employee emp7 = new Employee("UmarRehman", "Umar@gmail", "652341234", "9th Road");
+
             try
             {
                 _db.AddRange(emp1, emp2, emp3, emp4);
