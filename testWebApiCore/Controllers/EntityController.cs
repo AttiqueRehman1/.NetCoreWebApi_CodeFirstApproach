@@ -4,6 +4,7 @@ using System;
 using testWebApiCore.DBContext;
 using testWebApiCore.Models;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace testWebApiCore.Controllers
 {
@@ -21,19 +22,13 @@ namespace testWebApiCore.Controllers
 
         [HttpPost]
         [Route("addEmploye")]
-        public IActionResult add()
+        public IActionResult add(Employee employee)
         {
-            Employee emp1 = new Employee("attiqRehman", "Attiq@gmail", "012341234", "6th Road");
-            Employee emp2 = new Employee("sajadRehman", "sajad@gmail", "54341234", "7th Road");
-            Employee emp3 = new Employee("BongBong", "Bong@gmail", "3452341234", "8th Road");
-            Employee emp4 = new Employee("UmarRehman", "Umar@gmail", "652341234", "9th Road");
-            Employee emp5 = new Employee("sajadRehman", "sajad@gmail", "54341234", "7th Road");
-            Employee emp = new Employee("BongBong", "Bong@gmail", "3452341234", "8th Road");
-            Employee emp7 = new Employee("UmarRehman", "Umar@gmail", "652341234", "9th Road");
 
             try
             {
-                _db.AddRange(emp1, emp2, emp3, emp4);
+                _db.Employees.Add(employee);
+
                 _db.SaveChanges();
 
                 return Ok("Data added successfully.");
@@ -43,20 +38,16 @@ namespace testWebApiCore.Controllers
                 return BadRequest("Failed to add data. Error: " + ex.Message);
             }
         }
+        
         [HttpPost]
-        [Route("addPeople")]
-        public IActionResult addPeople()
+        [Route("addPErson")]
+        public IActionResult addPErson(Person person)
         {
-            Person person = new Person("sajad", 23, 01234123);
-            Person person1 = new Person("John", 25, 0123456789);
-            Person person2 = new Person("Alice", 30, 876543210);
-            Person person3 = new Person("Michael", 40, 1234567890);
-            Person person4 = new Person("Emma", 35, 0987654321);
+
             try
             {
-                _db.AddRange(person1, person2, person3, person4, person);
+                _db.People.Add(person);
                 _db.SaveChanges();
-
                 return Ok("Data added successfully.");
             }
             catch (Exception ex)
@@ -65,22 +56,149 @@ namespace testWebApiCore.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("getPeopleData")]
-        public IActionResult GetPeople()
-        {
+     
 
-            try
-            {
-                var a = _db.People.ToList();
-                //var ba = a.Where(c => c.Name.Contains("sajad", StringComparison.OrdinalIgnoreCase)).ToList();
-                return Ok(a);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest("Failed to Get data. Error: " + ex.Message);
-            }
-        }
+        //[HttpPost]
+        //[Route("updateName")]
+        //public IActionResult updateName(Person person)
+        //{
+        //    try
+        //    {
+        //        var existingPerson = _db.People.FirstOrDefault(p => p.Id == person.Id);
+        //        if (existingPerson != null)
+        //        {
+        //            existingPerson.Name = person.Name;
+        //            _db.SaveChanges();
+        //            return Ok("Data added successfully.");
+        //        }
+        //        else
+        //        {
+        //            return NotFound("Person not found.");
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Failed to add data. Error: " + ex.Message);
+        //    }
+        //}
+
+        //[HttpPost]
+        //[Route("addPeopleParamter")]
+        //public IActionResult addPeopleParamter(string name, int age, int phone)
+        //{
+        //    Person per = new Person();
+        //    per.Age = age;
+        //    per.Phone = phone;
+        //    per.Name = name;
+        //    try
+        //    {
+        //        _db.Add(per);
+        //        _db.SaveChanges();
+
+        //        return Ok("Data added successfully.");
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Failed to add data. Error: " + ex.Message);
+        //    }
+        //}
+
+        //[HttpGet]
+        //[Route("getPeopleData")]
+        //public IActionResult GetPeople()
+        //{
+
+        //    try
+        //    {
+        //        var a = _db.People.ToList();
+        //        if (a.Count == 0)
+        //        {
+        //            return NotFound("Not data Found");
+        //        }
+        //        // get people data where name is sajad
+        //        //var ba = a.Where(c => c.Name.Contains("sajad", StringComparison.OrdinalIgnoreCase)).ToList();
+        //        return Ok(a);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Failed to Get data. Error: " + ex.Message);
+        //    }
+        //}
+        //[HttpDelete]
+        //[Route("DeletePeopleWithID")]
+        //public IActionResult DeletePeople(int id)
+        //{
+
+        //    try
+        //    {
+        //        if (!int.TryParse(id.ToString(), out int personId) || id <= 0)
+        //        {
+        //            return BadRequest("Invalid number. Please provide a valid ID.");
+        //        }
+        //        var dlt = _db.People.FirstOrDefault(c => c.Id == id);
+        //        if (dlt != null)
+        //        {
+        //            _db.Remove(dlt);
+        //            _db.SaveChanges();
+        //            return Ok($"Person with Id {personId} & Name  {dlt.Name} Successfully Delete ");
+
+        //        }
+        //        else
+        //        {
+        //            return NotFound("not found");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Failed to Get data. Error: " + ex.Message);
+        //    }
+        //}
+        //[HttpDelete]
+        //[Route("DropPeopleTAble")]
+        //public IActionResult DropPeopleTAble()
+        //{
+
+        //    try
+        //    {
+
+        //        _db.Database.ExecuteSqlRaw("drop table People");
+        //        return Ok("People table dropped successfully.");
+        //    }
+
+
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Failed to drop table " + ex.Message);
+        //    }
+        //}
+        //[HttpDelete]
+        //[Route("DeleteAllPeople")]
+        //public IActionResult DeleteAllPeople()
+        //{
+
+        //    try
+        //    {
+        //        var dlt = _db.People.ToList();
+        //        if (dlt != null)
+        //        {
+        //            _db.RemoveRange(dlt);
+        //            _db.SaveChanges();
+        //            return Ok("Delete All Data Successfully");
+
+        //        }
+        //        else
+        //        {
+        //            return NotFound("not found");
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest("Failed to Get data. Error: " + ex.Message);
+        //    }
+        //}
+
+
 
 
 
