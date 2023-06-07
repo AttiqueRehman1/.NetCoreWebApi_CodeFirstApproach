@@ -1,8 +1,12 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using testWebApiCore.DBContext;
+using testWebApiCore.DTO_Models;
 using testWebApiCore.Models;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace testWebApiCore.Controllers
 {
@@ -12,9 +16,11 @@ namespace testWebApiCore.Controllers
     {
 
         private readonly MyDbContext _db;
-        public BookController(MyDbContext db)
+        private IMapper _mapper;
+        public BookController(MyDbContext db, IMapper mapper)
         {
             _db = db;
+            _mapper = mapper;
         }
 
         [HttpPost]
@@ -57,7 +63,9 @@ namespace testWebApiCore.Controllers
             try
             {
 
-                return Ok(_db.Books.ToList());
+                var bookpbject = _db.Books.ToList();
+                var mapbooks = _mapper.Map<List<BookDTO>>(bookpbject);
+                return Ok(mapbooks);
             }
             catch (Exception ex)
             {
@@ -72,8 +80,9 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-
-                return Ok(_db.Authors.ToList());
+                var authorList = _db.Authors.ToList();
+                var MapperList = _mapper.Map<List<AuthorDTO>>(authorList);
+                return Ok(MapperList);
             }
             catch (Exception ex)
             {
@@ -83,7 +92,7 @@ namespace testWebApiCore.Controllers
         }
 
         [HttpGet]
-        [Route("api/Books/{bookid}")]
+        [Route("GetBookAuthorName/{bookid}")]
         public ActionResult GetBookAuthorName(int bookid)
         {
             try
@@ -132,7 +141,7 @@ namespace testWebApiCore.Controllers
             try
             {
                 var authorBookList = _db.Authors
-                    .Include(x => x.Books.Where(x=>x.bookId>7))
+                    .Include(x => x.Books)
                     .Where(c => c.AuthorName == authorname).FirstOrDefault();
                 if (authorBookList == null)
                 {
@@ -145,6 +154,180 @@ namespace testWebApiCore.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpGet]
+        [Route("api/getBookName")]
+        public ActionResult getBookName(string bkName)
+        {
+            try
+            {
+                var bookName = _db.Books
+                .Where(b => b.bookTitle.Contains(bkName)).ToList();
+
+
+                if (bookName == null)
+                {
+                    return NotFound("Book not found");
+                }
+                return Ok(bookName);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("AddAuthorInfo")]
+        public ActionResult AddAuthorInfo(AuthorInfo authorInfo)
+        {
+            try
+            {
+                _db.authorInfos.Add(authorInfo);
+                _db.SaveChanges();
+                return Ok("AuthorInfo Add successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("api/getAuthoInfoAndBooks")]
+        public ActionResult getAuthoInfoAndBooks(string authorName)
+        {
+            try
+            {
+                var authorInfo = _db.Books
+                    .Include(x => x.Author)
+                    .ThenInclude(b => b.AuthorInfo)
+                    .Where(b => b.Author.AuthorName == authorName)
+                    .ToList();
+
+
+                if (authorInfo == null)
+                {
+                    return NotFound("Book not found");
+                }
+                return Ok(authorInfo);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost]
+        [Route("AddBookDTO")]
+        public ActionResult AddBookDTO(BookDTO book)
+        {
+            try
+            {
+                var bk = _mapper.Map<Book>(book);
+                _db.Books.Add(bk);
+                _db.SaveChanges();
+
+                return Ok("Book Added Successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+        [HttpPost]
+        [Route("AddAuthorDTO")]
+        public ActionResult AddAuthorDTO(AuthorDTO author)
+        {
+            try
+            {
+                var a = _mapper.Map<Author>(author);
+                _db.Authors.Add(a);
+                _db.SaveChanges();
+                return Ok("Author Add sucessfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
+        }
+
+
+        [HttpGet]
+        [Route("DTOGetBookAuthorName/{bookid}")]
+        public ActionResult DTOGetBookAuthorName(int bookid)
+        {
+            try
+            {
+                var book = _db.Books
+                    .Include(x => x.Author)
+                    .Where(b => b.bookId == bookid).FirstOrDefault();
+
+                var asd = _mapper.Map<BookDTO>(book);
+                asd.AuthorName = book.Author.AuthorName;
+
+                if (book == null)
+                {
+                    return NotFound("Book not found");
+                }
+
+                return Ok(asd);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost]
+        [Route("DTOAddAuthorInfo")]
+        public ActionResult DTOAddAuthorInfo(AuthorInfo_DTO authorInfo)
+        {
+            try
+            {
+                var infoDTO = _mapper.Map<AuthorInfo>(authorInfo);
+                _db.authorInfos.Add(infoDTO);
+                _db.SaveChanges();
+                return Ok("AuthorInfo Add successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("api/DTOgetAuthoInfoAndBooks")]
+        public ActionResult DTOgetAuthoInfoAndBooks(string authorName)
+        {
+            try
+            {
+                var authorInfo = _db.Authors
+                    .Include(a => a.Books)
+                    .Where(a => a.AuthorName == authorName)
+                    .FirstOrDefault();
+
+              
+                var dto = _mapper.Map<AuhhorInfo_BookInfo>(authorInfo);
+                //dto.Books = authorInfo.Books.Select(b => b.bookTitle).ToList();
+
+                if (authorInfo == null)
+                {
+                    return NotFound("Book not found");
+                }
+                return Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
     }
+
 }
