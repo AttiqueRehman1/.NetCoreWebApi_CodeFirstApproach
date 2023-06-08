@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using testWebApiCore.DBContext;
 using testWebApiCore.DTO_Models;
+using testWebApiCore.Interface;
 using testWebApiCore.Models;
 using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 using static System.Reflection.Metadata.BlobBuilder;
@@ -17,10 +18,12 @@ namespace testWebApiCore.Controllers
 
         private readonly MyDbContext _db;
         private IMapper _mapper;
-        public BookController(MyDbContext db, IMapper mapper)
+        IBook _bookrepo;
+        public BookController(MyDbContext db, IMapper mapper, IBook bookrepo)
         {
             _db = db;
             _mapper = mapper;
+            _bookrepo = bookrepo;
         }
 
         [HttpPost]
@@ -29,8 +32,7 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-                _db.Books.Add(book);
-                _db.SaveChanges();
+                _bookrepo.AddBook(book);
                 return Ok("Book Add successfully");
             }
             catch (Exception ex)
@@ -62,10 +64,7 @@ namespace testWebApiCore.Controllers
         {
             try
             {
-
-                var bookpbject = _db.Books.ToList();
-                var mapbooks = _mapper.Map<List<BookDTO>>(bookpbject);
-                return Ok(mapbooks);
+                return Ok(_bookrepo.GetBook());
             }
             catch (Exception ex)
             {
@@ -217,7 +216,6 @@ namespace testWebApiCore.Controllers
             }
         }
 
-
         [HttpPost]
         [Route("AddBookDTO")]
         public ActionResult AddBookDTO(BookDTO book)
@@ -307,11 +305,12 @@ namespace testWebApiCore.Controllers
             try
             {
                 var authorInfo = _db.Authors
+                    .Include(a => a.AuthorInfo)
                     .Include(a => a.Books)
                     .Where(a => a.AuthorName == authorName)
                     .FirstOrDefault();
 
-              
+
                 var dto = _mapper.Map<AuhhorInfo_BookInfo>(authorInfo);
                 //dto.Books = authorInfo.Books.Select(b => b.bookTitle).ToList();
 
@@ -329,5 +328,4 @@ namespace testWebApiCore.Controllers
 
 
     }
-
 }

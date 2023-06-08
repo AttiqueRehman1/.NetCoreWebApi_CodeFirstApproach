@@ -14,6 +14,7 @@ namespace testWebApiCore.MapperProfile
             CreateMap<BookDTO, Book>();
             CreateMap<Author, AuthorDTO>().ReverseMap();
             CreateMap<Author, AuhhorInfo_BookInfo>();
+            
 
         }
     }

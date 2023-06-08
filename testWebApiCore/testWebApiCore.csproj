@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <Folder Include="Migratios\" />
+    <Folder Include="Models2\" />
   </ItemGroup>
 
 </Project>

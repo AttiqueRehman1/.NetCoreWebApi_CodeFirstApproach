@@ -8,6 +8,7 @@ namespace testWebApiCore.DTO_Models
         public int AuthorId { get; set; }
         public string AuthorName { get; set; }
         public List<BookDTO> Books { get; set; }
+       
 
     }
 }

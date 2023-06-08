@@ -5,8 +5,10 @@
         public int bookId { get; set; }
 
         public string bookTitle { get; set; }
-       // public int AuthorId { get; set; }
+        // public int AuthorId { get; set; }
         public string AuthorName { get; set; }
+
+
 
 
     }

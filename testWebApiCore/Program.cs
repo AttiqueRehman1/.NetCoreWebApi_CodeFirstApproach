@@ -5,8 +5,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System;
 using System.Text.Json.Serialization;
 using testWebApiCore.DBContext;
+using testWebApiCore.Interface;
 using testWebApiCore.MapperProfile;
 using testWebApiCore.Models;
+using testWebApiCore.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,17 +19,16 @@ builder.Services.AddControllersWithViews().AddJsonOptions(x =>
 //auto mapper services
 //builder.Services.AddAutoMapper(typeof(Program));
 
-
-
-
-
-
 builder.Services.AddDbContext<MyDbContext>(options => options.UseSqlServer(
-    builder.Configuration.GetConnectionString("constr")
+builder.Configuration.GetConnectionString("constr")
     ));
+
 
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddControllers();
+
+builder.Services.AddScoped<IBook,BookRepo>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
